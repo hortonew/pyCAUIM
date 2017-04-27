@@ -6,7 +6,27 @@ Author: Erik Horton
 """
 import requests
 from globalvars import USER, PASSWORD, HEADERS, SITE, DOMAIN, HUB, ROBOT
-from hubs import get_all_hubs, identify_hub
+from lxml import etree
+
+
+def get_all_hubs():
+    """Get the version of the API. Print version.text to get the info."""
+    api_call = SITE + "/rest/hubs"
+    r = requests.get(api_call, auth=(USER, PASSWORD))
+    hub_list = list()
+
+    try:
+        xml = r.text
+        xml = xml.encode('utf16')
+        root = etree.XML(xml)
+
+        for item in root.xpath('/hublist/hub'):
+            hub = item.xpath('name')[0].text
+            hub_list.append(hub)
+    except:
+        False
+
+    return hub_list
 
 
 def invoke_callback(
@@ -40,9 +60,6 @@ def invoke_callback(
 
 def maintenance_mode(robot, hub, start_epoch, end_epoch):
     """Workflow to create a maintenance mode schedule."""
-    hubs = get_all_hubs()
-    print hubs
-    hub = identify_hub(robot)
     data = {
         "timeout": "10000",
         "parameters": [
