@@ -13,6 +13,7 @@ SITE = "http://myumpserver:8080"
 DOMAIN = "myUIMDomain"
 HUB = "examplehub"
 ROBOT = "examplerobot"
+PRIMARYHUB = "primaryhub"
 
 # Used in post requests
 HEADERS = {
