@@ -43,8 +43,6 @@ def invoke_callback(
     api_call = site + "/rest/probe/" + domain + "/" + hub + "/" + robot + "/" \
         + probe + "/callback/" + callback
 
-    print api_call
-
     try:
         response = requests.post(
             api_call,
