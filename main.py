@@ -153,8 +153,22 @@ def maintenance_mode_create_schedule(name, desc, start_epoch, end_epoch):
         return "Request of maintenance_mode_create_schedule failed."
 
 def maintenance_mode_add_to_schedule(schedule_id, cs_id):
-    """Adds cs_id to schedule_id"""
-    return True
+    """Adds cs_id (list) to schedule_id"""
+    api_call = SITE + "/rest/maintenance_mode" + PRIMARYHUB_PATH + "/add_computer_systems_to_schedule/" \
+        + schedule_id
+    data = {
+        "cs": cs_id
+    }
+    try:
+        response = requests.post(
+            api_call,
+            auth=(USER, PASSWORD),
+            headers=HEADERS,
+            json=data
+        )
+        return response.text
+    except:
+        return "Failed to add computers to schedule"
 
 def stop_maintenance_mode(robot, hub):
     """Stop maintenance on robot."""
