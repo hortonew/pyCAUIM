@@ -170,6 +170,28 @@ def maintenance_mode_add_to_schedule(schedule_id, cs_id):
     except:
         return False, "Failed to add computers to schedule"
 
+def maintenance_mode_task(
+    change,
+    computers,
+    start_epoch,
+    end_epoch
+):
+    """Build a maintenance period and add hosts"""
+    cs_id_list = list()
+    name = "Change control: " + change
+    description = "Built by script"
+    for computer in computers:
+        gcsi_status, c_id = get_computer_system_id(computer)
+        if gcsi_status:
+            cs_id_list.append(c_id)
+            print("Added " + computer + " - " + c_id + " to computer list")
+
+    mmcs_status, s_id = maintenance_mode_create_schedule(name, description, start_epoch, end_epoch)
+    if mmcs_status:
+        print("Created maintenance schedule")
+        mmats_status, response = maintenance_mode_add_to_schedule(s_id, cs_id_list)
+        print("Successfully completed change control disable")
+
 def stop_maintenance_mode(robot, hub):
     """Stop maintenance on robot."""
     return maintenance_mode(robot, 0, 0)
