@@ -15,9 +15,9 @@ def get_xml_item(text, path):
         xml = xml.encode('utf16')
         root = etree.XML(xml)
         item = root.xpath(path)[0].text
-        return item
+        return True, item
     except:
-        return ""
+        return False, ""
 
 def get_all_hubs():
     """Get all hubs in environment."""
@@ -43,8 +43,8 @@ def get_computer_system_id(cs_name):
     api_call = SITE + "/rest/computer_systems/cs_name/" + cs_name + "?contains=true"
     r = requests.get(api_call, auth=(USER, PASSWORD))
 
-    computer_system_id = get_xml_item(r.text, '/computer_systems/computer_system/cs_id')
-    return computer_system_id
+    status, computer_system_id = get_xml_item(r.text, '/computer_systems/computer_system/cs_id')
+    return status, computer_system_id
 
 def invoke_callback(
     probe,
@@ -147,10 +147,10 @@ def maintenance_mode_create_schedule(name, desc, start_epoch, end_epoch):
             json=data
         )
 
-        schedule_id = get_xml_item(response.text, '/schedule/schedule_id')
-        return schedule_id
+        status, schedule_id = get_xml_item(response.text, '/schedule/schedule_id')
+        return status, schedule_id
     except:
-        return "Request of maintenance_mode_create_schedule failed."
+        return False, "Request of maintenance_mode_create_schedule failed."
 
 def maintenance_mode_add_to_schedule(schedule_id, cs_id):
     """Adds cs_id (list) to schedule_id"""
@@ -166,9 +166,9 @@ def maintenance_mode_add_to_schedule(schedule_id, cs_id):
             headers=HEADERS,
             json=data
         )
-        return response.text
+        return True, response.text
     except:
-        return "Failed to add computers to schedule"
+        return False, "Failed to add computers to schedule"
 
 def stop_maintenance_mode(robot, hub):
     """Stop maintenance on robot."""
