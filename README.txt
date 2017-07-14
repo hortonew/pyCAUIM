@@ -14,6 +14,8 @@ DOMAIN = "myUIMDomain"
 HUB = "examplehub"
 ROBOT = "examplerobot"
 PRIMARYHUB = "primaryhub"
+PRIMARYHUB_PATH = "/" + DOMAIN + "/" + PRIMARYHUB.upper() + "hub" + "/" \
+    + PRIMARYHUB
 
 # Used in post requests
 HEADERS = {

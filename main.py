@@ -5,9 +5,19 @@ Author: Erik Horton
 
 """
 import requests
-from globalvars import USER, PASSWORD, HEADERS, SITE, DOMAIN, HUB, ROBOT
+from globalvars import USER, PASSWORD, HEADERS, SITE, DOMAIN, HUB, ROBOT, PRIMARYHUB_PATH
 from lxml import etree
 
+def get_xml_item(text, path):
+    """Convert xml string to entry"""
+    try:
+        xml = text
+        xml = xml.encode('utf16')
+        root = etree.XML(xml)
+        item = root.xpath(path)[0].text
+        return item
+    except:
+        return ""
 
 def get_all_hubs():
     """Get all hubs in environment."""
@@ -32,19 +42,8 @@ def get_computer_system_id(cs_name):
     """Get the computer system id of a computer."""
     api_call = SITE + "/rest/computer_systems/cs_name/" + cs_name + "?contains=true"
     r = requests.get(api_call, auth=(USER, PASSWORD))
-    computer_system_id = ""
 
-    try:
-        xml = r.text
-        xml = xml.encode('utf16')
-        root = etree.XML(xml)
-
-        for item in root.xpath('/computer_systems/computer_system'):
-            computer_system_id = item.xpath('cs_id')[0].text
-            computer_system_id = computer_system_id
-    except:
-        False
-
+    computer_system_id = get_xml_item(r.text, '/computer_systems/computer_system/cs_id')
     return computer_system_id
 
 def invoke_callback(
@@ -68,10 +67,10 @@ def invoke_callback(
             headers=HEADERS,
             json=data
         )
+        return response.text
     except:
         return "Request of invoke_callback failed."
 
-    return response
 
 
 def maintenance_mode(robot, hub, start_epoch, end_epoch):
@@ -96,11 +95,70 @@ def maintenance_mode(robot, hub, start_epoch, end_epoch):
                         data, SITE, DOMAIN, hub, robot)
     return r
 
+def epoch_to_time_fields(epoch):
+    """Convert epoch to mon/day/year/hour/min/sec"""
+    import time
+    t = time.localtime(epoch)
+    month = t.tm_mon
+    day = t.tm_mday
+    year = t.tm_year
+    hours = t.tm_hour
+    minutes = t.tm_min
+    seconds = t.tm_sec
+    return month, day, year, hours, minutes, seconds
+
+def maintenance_mode_create_schedule(name, desc, start_epoch, end_epoch):
+    """Define a mainteannce_mode schedule"""
+    api_call = SITE + "/rest/maintenance_mode" + PRIMARYHUB_PATH + "/add_schedule"
+    s_month, s_day, s_year, s_hours, s_min, s_sec = epoch_to_time_fields(start_epoch)
+    e_month, e_day, e_year, e_hours, e_min, e_sec = epoch_to_time_fields(end_epoch)
+    data = {
+        "name": name,
+        "description": desc,
+        "start_date_time": {
+            "month": s_month,
+            "day": s_day,
+            "year": s_year,
+            "timestamp": {
+                "hours": s_hours,
+                "minutes": s_min,
+                "seconds": s_sec
+            }
+        },
+        "end_time": {
+            "type": "end_date_time", 
+            "end_date_time": {
+                "month": e_month,
+                "day": e_day,
+                "year": e_year,
+                "timestamp": {
+                    "hours": e_hours,
+                    "minutes": e_min,
+                    "seconds": e_sec
+                }
+            }
+        }
+    }
+    try:
+        response = requests.post(
+            api_call,
+            auth=(USER, PASSWORD),
+            headers=HEADERS,
+            json=data
+        )
+
+        schedule_id = get_xml_item(response.text, '/schedule/schedule_id')
+        return schedule_id
+    except:
+        return "Request of maintenance_mode_create_schedule failed."
+
+def maintenance_mode_add_to_schedule(schedule_id, cs_id):
+    """Adds cs_id to schedule_id"""
+    return True
 
 def stop_maintenance_mode(robot, hub):
     """Stop maintenance on robot."""
     return maintenance_mode(robot, 0, 0)
-
 
 def verify_maintenance_mode(robot, hub, start_epoch, end_epoch):
     """Description: Verify maintenance mode schedule."""
