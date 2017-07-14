@@ -10,7 +10,7 @@ from lxml import etree
 
 
 def get_all_hubs():
-    """Get the version of the API. Print version.text to get the info."""
+    """Get all hubs in environment."""
     api_call = SITE + "/rest/hubs"
     r = requests.get(api_call, auth=(USER, PASSWORD))
     hub_list = list()
@@ -28,6 +28,24 @@ def get_all_hubs():
 
     return hub_list
 
+def get_computer_system_id(cs_name):
+    """Get the computer system id of a computer."""
+    api_call = SITE + "/rest/computer_systems/cs_name/" + cs_name + "?contains=true"
+    r = requests.get(api_call, auth=(USER, PASSWORD))
+    computer_system_id = ""
+
+    try:
+        xml = r.text
+        xml = xml.encode('utf16')
+        root = etree.XML(xml)
+
+        for item in root.xpath('/computer_systems/computer_system'):
+            computer_system_id = item.xpath('cs_id')[0].text
+            computer_system_id = computer_system_id
+    except:
+        False
+
+    return computer_system_id
 
 def invoke_callback(
     probe,
