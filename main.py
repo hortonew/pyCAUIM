@@ -178,7 +178,7 @@ def maintenance_mode_task(
 ):
     """Build a maintenance period and add hosts"""
     cs_id_list = list()
-    name = "Change control: " + change
+    name = "Automated change control: " + change
     description = "Built by script"
     for computer in computers:
         gcsi_status, c_id = get_computer_system_id(computer)
